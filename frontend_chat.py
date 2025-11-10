@@ -39,32 +39,44 @@ st.markdown(
 # -------------------------------
 # BACKEND CONFIGURATION
 # -------------------------------
-API_URL = "http://127.0.0.1:8000"  # change this to your deployed backend URL when live
+API_URL = "http://127.0.0.1:8000"  # change this to your deployed backend URL
 
 # Check backend connection
+backend_status = False
 try:
     response = requests.get(f"{API_URL}/health")
     if response.status_code == 200:
         st.success("✅ Backend is online and ready")
+        backend_status = True
     else:
         st.warning("⚠️ Backend responded but may not be fully ready.")
 except Exception:
     st.error("❌ Backend not reachable. Please start your FastAPI server (port 8000).")
 
 # -------------------------------
-# EXAMPLE PROMPTS
+# CATEGORIES AND SUGGESTED KEYWORDS
 # -------------------------------
-st.markdown(
-    """
-    💡 **Try one of these example queries:**
-    - `apoptosis`
-    - `C17988`
-    - `breast carcinoma`
-    - `angiogenesis`
-    - `DNA repair`
-    """,
-    unsafe_allow_html=True
+categories = {
+    "🧬 Cell Processes": ["apoptosis", "cell cycle", "DNA repair", "angiogenesis"],
+    "🧫 Diseases": ["breast carcinoma", "lung cancer", "glioblastoma", "diabetes mellitus"],
+    "🧠 Genes & Proteins": ["TP53", "EGFR", "BRCA1", "AKT1"],
+    "💊 Drug Classes": ["PARP inhibitors", "monoclonal antibodies", "NSAIDs", "kinase inhibitors"],
+    "🏥 Clinical Terms": ["metastasis", "immunotherapy", "chemotherapy", "biomarker"]
+}
+
+st.markdown("---")
+st.subheader("🔍 Explore Medical Terminology")
+
+selected_category = st.selectbox("Select a category:", list(categories.keys()))
+selected_suggestion = st.selectbox(
+    "Choose a suggested keyword:",
+    [""] + categories[selected_category],
+    format_func=lambda x: "Select a term..." if x == "" else x
 )
+
+# Handle clickable suggestion (auto-send to chat)
+if selected_suggestion and "auto_sent" not in st.session_state:
+    st.session_state.auto_sent = selected_suggestion
 
 # -------------------------------
 # BACKEND QUERY FUNCTIONS
@@ -111,7 +123,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.caption("🧬 MedSyn AI v1.1 | © 2025")
+    st.caption("🧬 MedSyn AI v1.2 | © 2025")
 
 # -------------------------------
 # MAIN CHAT INTERFACE
@@ -119,13 +131,22 @@ with st.sidebar:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
+st.subheader("💬 Interactive Chat")
+
 # Show chat history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Chat input
-if prompt := st.chat_input("Enter a medical term or NCIT code..."):
+# Determine input (manual or from dropdown)
+prompt = st.chat_input("Enter a medical term or NCIT code...")
+
+if "auto_sent" in st.session_state and not prompt:
+    prompt = st.session_state.auto_sent
+    del st.session_state.auto_sent
+
+# Chat logic
+if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
