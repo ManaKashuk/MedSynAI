@@ -28,7 +28,7 @@ except Exception:
 
 st.markdown(
     """
-    <h1 style='font-size: 0.4em; color: #000000;'>🧬 MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
+    <h1 style='font-size: 1.4em; color: #000000;'>🧬 MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
     </p>
     """,
