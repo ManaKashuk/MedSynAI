@@ -22,13 +22,13 @@ st.set_page_config(
 logo_path = "logo.png"
 try:
     logo = Image.open(logo_path)
-    st.image(logo, width=800)
+    st.image(logo, width=700)
 except Exception:
     st.warning("⚠️ Logo not found. Please place 'logo.png' in the same folder.")
 
 st.markdown(
     """
-    <p style='font-size:1.5em; color:#5f6361;'>
+    <p style='font-size:1.4em; color:#5f6361;'>
     💡I am a semantic assistant trained to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
     </p>
