@@ -1,5 +1,5 @@
 # ===============================
-# 🧬 MedSyn AI — Medical Synonym Assistant (Offline CSV Mode with Icon)
+# 🧬 MedSyn AI — Medical Synonym Assistant (Simplified Display)
 # ===============================
 
 import streamlit as st
@@ -12,24 +12,24 @@ import os
 # -------------------------------
 st.set_page_config(
     page_title="MedSyn AI: Medical Synonym Assistant",
-    page_icon="icon.png",  # custom MedSyn AI icon replaces default orange robot
+    page_icon="icon.png",
     layout="wide"
 )
 
 # -------------------------------
-# HEADER SECTION
+# HEADER
 # -------------------------------
 logo_path = "logo.png"
 try:
     logo = Image.open(logo_path)
-    st.image(logo, width=500)
+    st.image(logo, width=480)
 except Exception:
     st.warning("⚠️ Logo not found. Please place 'logo.png' in the same folder.")
 
 st.markdown(
     """
-    <p style='font-size: 1.1em; color: #6e7467;'>
-    💡MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
+    <p style='font-size:1.5em; color:#5f6361;'>
+    💡 MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
     </p>
     """,
@@ -61,55 +61,40 @@ st.markdown("---")
 st.subheader("🔍 Explore Medical Terminology")
 
 selected_category = st.selectbox("Select a category:", categories)
-
 terms = df[df["Category"] == selected_category]["Term"].unique().tolist()
 selected_term = st.selectbox("Choose a suggested keyword:", [""] + terms)
 
 # -------------------------------
-# CHAT & QUERY LOGIC
+# DISPLAY OUTPUT (No Chat Mode)
 # -------------------------------
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+prompt = st.text_input("Enter a medical term or NCIT code...", value=selected_term)
 
-st.subheader("💬 Interactive Chat")
-
-# Display chat history
-for msg in st.session_state.messages:
-    if msg["role"] == "assistant":
-        with st.chat_message("assistant", avatar="icon.png"):  # custom MedSyn AI icon
-            st.markdown(msg["content"])
-    else:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-
-# Determine input (manual or from dropdown)
-prompt = st.chat_input("Enter a medical term or NCIT code...")
-if not prompt and selected_term:
-    prompt = selected_term
-
-# Chat interaction
 if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    # Look up in CSV
+    result_row = df[df["Term"].str.lower() == prompt.lower()]
+    if not result_row.empty:
+        synonyms = result_row.iloc[0]["Synonyms"]
+        definition = result_row.iloc[0]["Definition"]
 
-    with st.chat_message("assistant", avatar="icon.png"):  # 🧬 MedSyn AI speaks
-        with st.spinner("Analyzing term..."):
-            try:
-                result_row = df[df["Term"].str.lower() == prompt.lower()]
-                if not result_row.empty:
-                    synonyms = result_row.iloc[0]["Synonyms"]
-                    definition = result_row.iloc[0]["Definition"]
-                    reply = f"### **Results for '{prompt}'**\n"
-                    reply += f"**Synonyms:** {synonyms}\n\n"
-                    reply += f"**Definition:** {definition}"
-                else:
-                    reply = f"⚠️ No data found for '{prompt}' in the local backup."
-            except Exception as e:
-                reply = f"❌ Error: {str(e)}"
+        # MedSyn AI icon
+        try:
+            icon = Image.open("icon.png")
+            st.image(icon, width=70)
+        except Exception:
+            pass
 
-            st.markdown(reply)
-            st.session_state.messages.append({"role": "assistant", "content": reply})
+        # Show results (no “Results for ...”)
+        st.markdown(
+            f"""
+            <div style='font-size:1.05em; line-height:1.6em; color:#333;'>
+            <b>Synonyms:</b> {synonyms}<br><br>
+            <b>Definition:</b> {definition}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    else:
+        st.warning(f"⚠️ No data found for '{prompt}' in local backup.")
 
 # -------------------------------
 # FOOTER
