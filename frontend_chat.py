@@ -28,8 +28,8 @@ except Exception:
 
 st.markdown(
     """
-    <p style='font-size:2em; color:#5f6361;'>
-    💡 I am a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
+    <p style='font-size:1.5em; color:#5f6361;'>
+    💡I am a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
     </p>
     """,
