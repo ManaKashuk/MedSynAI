@@ -59,8 +59,8 @@ except Exception:
 # Load  backup
 if use_backup:
     if os.path.exists(BACKUP_FILE):
-        df = pd.read_(medsyn_backup.csv)
-        st.info(f"📁 Loaded offline backup: `{BACKUP_FILE}`")
+        df = pd.read_(BACKUP_FILE)
+        st.info(f"📁 Loaded offline backup: `{medsyn_backup.csv}`")
     else:
         st.error("❌ Backup  not found. Please add `medsyn_backup.xlsx` to the repo.")
         st.stop()
