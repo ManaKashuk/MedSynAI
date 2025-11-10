@@ -101,6 +101,6 @@ if prompt:
 # -------------------------------
 st.markdown("---")
 st.markdown(
-    "<center><p style='color:#9e9e9e;'>MedSyn AI © 2025 | Developed by Scientists for Experts 🎯 Built to Unify Medical Terminology Through Semantic Intelligence</p></center>",
+    "<center><p style='color:#9e9e9e;'>MediSyn AI © 2025 | Developed by Scientists for Experts 🎯 Built to Unify Medical Terminology Through Semantic Intelligence</p></center>",
     unsafe_allow_html=True
 )
