@@ -1,11 +1,10 @@
 # ===============================
-# 🧬 MedSyn AI — Medical Synonym Assistant (Offline  Mode)
+# 🧬 MedSyn AI — Medical Synonym Assistant (Offline CSV Mode)
 # ===============================
 
 import streamlit as st
 import pandas as pd
 from PIL import Image
-import requests
 import os
 
 # -------------------------------
@@ -38,54 +37,32 @@ st.markdown(
 )
 
 # -------------------------------
-# BACKEND OR  BACKUP
+# LOAD LOCAL CSV BACKUP
 # -------------------------------
-API_URL = "http://127.0.0.1:8000"
 BACKUP_FILE = "medsyn_backup.csv"
 
-use_backup = False
-
-# Check backend availability
-try:
-    response = requests.get(f"{API_URL}/health", timeout=2)
-    if response.status_code == 200:
-        st.success("✅ Backend is online and ready")
-    else:
-        use_backup = True
-except Exception:
-    st.warning("⚠️ Backend not reachable — using local  backup instead.")
-    use_backup = True
-
-# Load  backup
-if use_backup:
-    if os.path.exists(BACKUP_FILE):
-        df = pd.read_medsyn_backup.csv
-        st.info(f"📁 Loaded offline backup: `{medsyn_backup.csv}`")
-    else:
-        st.error("❌ Backup  not found. Please add `medsyn_backup.xlsx` to the repo.")
+if os.path.exists(BACKUP_FILE):
+    try:
+        df = pd.read_csv(BACKUP_FILE)
+        st.success(f"📁 Loaded local backup data from `{BACKUP_FILE}`")
+    except Exception as e:
+        st.error(f"❌ Failed to load `{BACKUP_FILE}`: {e}")
         st.stop()
+else:
+    st.error("❌ Backup file not found. Please add `medsyn_backup.csv` to the repository.")
+    st.stop()
 
 # -------------------------------
 # CATEGORY + TERM SELECTION
 # -------------------------------
-categories = sorted(df["Category"].unique()) if use_backup else [
-    "🧬 Cell Processes",
-    "🧫 Diseases",
-    "🧠 Genes & Proteins",
-    "💊 Drug Classes",
-    "🏥 Clinical Terms"
-]
+categories = sorted(df["Category"].unique())
 
 st.markdown("---")
 st.subheader("🔍 Explore Medical Terminology")
 
 selected_category = st.selectbox("Select a category:", categories)
 
-if use_backup:
-    terms = df[df["Category"] == selected_category]["Term"].unique().tolist()
-else:
-    terms = []
-
+terms = df[df["Category"] == selected_category]["Term"].unique().tolist()
 selected_term = st.selectbox("Choose a suggested keyword:", [""] + terms)
 
 # -------------------------------
@@ -96,16 +73,17 @@ if "messages" not in st.session_state:
 
 st.subheader("💬 Interactive Chat")
 
-# Display previous messages
+# Display chat history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Use manual or dropdown term
+# Determine input (manual or from dropdown)
 prompt = st.chat_input("Enter a medical term or NCIT code...")
 if not prompt and selected_term:
     prompt = selected_term
 
+# Chat interaction
 if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -114,20 +92,15 @@ if prompt:
     with st.chat_message("assistant"):
         with st.spinner("Analyzing term..."):
             try:
-                if use_backup:
-                    # Look up term in 
-                    result_row = df[df["Term"].str.lower() == prompt.lower()]
-                    if not result_row.empty:
-                        synonyms = result_row.iloc[0]["Synonyms"]
-                        definition = result_row.iloc[0]["Definition"]
-                        reply = f"### 🧠 **Results for '{prompt}'**\n"
-                        reply += f"**Synonyms:** {synonyms}\n\n**Definition:** {definition}"
-                    else:
-                        reply = f"⚠️ No data found for '{prompt}' in backup file."
+                result_row = df[df["Term"].str.lower() == prompt.lower()]
+                if not result_row.empty:
+                    synonyms = result_row.iloc[0]["Synonyms"]
+                    definition = result_row.iloc[0]["Definition"]
+                    reply = f"### 🧠 **Results for '{prompt}'**\n"
+                    reply += f"**Synonyms:** {synonyms}\n\n"
+                    reply += f"**Definition:** {definition}"
                 else:
-                    # Placeholder for backend
-                    reply = f"🔗 Backend mode will query: {API_URL}/... (currently offline)"
-
+                    reply = f"⚠️ No data found for '{prompt}' in the local backup."
             except Exception as e:
                 reply = f"❌ Error: {str(e)}"
 
