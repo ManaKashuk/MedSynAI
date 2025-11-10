@@ -41,7 +41,7 @@ st.markdown(
 # BACKEND OR EXCEL BACKUP
 # -------------------------------
 API_URL = "http://127.0.0.1:8000"
-BACKUP_FILE = "medsyn_backup.xlsx"
+BACKUP_FILE = "medsyn_backup.csv"
 
 use_backup = False
 
