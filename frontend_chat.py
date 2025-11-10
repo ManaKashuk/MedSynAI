@@ -88,7 +88,8 @@ if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-
+# Replace the assistant chat message avatar
+st.chat_message("assistant", avatar="icon.png").markdown(reply)
     with st.chat_message("assistant"):
         with st.spinner("Analyzing term..."):
             try:
