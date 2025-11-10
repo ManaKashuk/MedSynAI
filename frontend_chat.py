@@ -10,7 +10,7 @@ from PIL import Image
 # PAGE CONFIGURATION
 # -------------------------------
 st.set_page_config(
-    page_title="MedSyn AI — Medical Synonym Assistant",
+    page_title="MedSyn AI:Medical Synonym Assistant",
     page_icon="🧬",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -22,15 +22,13 @@ st.set_page_config(
 logo_path = "logo.png"
 try:
     logo = Image.open(logo_path)
-    st.image(logo, width=180)
+    st.image(logo, width=500)
 except Exception:
     st.warning("⚠️ Logo not found. Please place 'logo.png' in the same folder.")
 
 st.markdown(
     """
-    <h1 style='font-size: 2.4em; color: #4fc3f7;'>🧬 MedSyn AI (Medical Synonym Assistant)</h1>
-    <p style='font-size: 1.1em; color: #e0e0e0;'>
-    MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
+    <h1 style='font-size: 2.4em; color: #4fc3f7;'>🧬 MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
     </p>
     """,
