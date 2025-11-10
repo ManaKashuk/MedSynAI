@@ -1,10 +1,12 @@
 # ===============================
-# 🧬 MedSyn AI — Medical Synonym Assistant
+# 🧬 MedSyn AI — Medical Synonym Assistant (Offline Excel Mode)
 # ===============================
 
 import streamlit as st
-import requests
+import pandas as pd
 from PIL import Image
+import requests
+import os
 
 # -------------------------------
 # PAGE CONFIGURATION
@@ -27,7 +29,6 @@ except Exception:
 
 st.markdown(
     """
-    <h1 style='font-size: 2em; color: #5b6254;'>🧬 MedSyn AI (Medical Synonym Assistant)</h1>
     <p style='font-size: 1.1em; color: #6e7467;'>
     MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
@@ -37,115 +38,74 @@ st.markdown(
 )
 
 # -------------------------------
-# BACKEND CONFIGURATION
+# BACKEND OR EXCEL BACKUP
 # -------------------------------
-API_URL = "http://127.0.0.1:8000"  # change this to your deployed backend URL
+API_URL = "http://127.0.0.1:8000"
+BACKUP_FILE = "medsyn_backup.xlsx"
 
-# Check backend connection
-backend_status = False
+use_backup = False
+
+# Check backend availability
 try:
-    response = requests.get(f"{API_URL}/health")
+    response = requests.get(f"{API_URL}/health", timeout=2)
     if response.status_code == 200:
         st.success("✅ Backend is online and ready")
-        backend_status = True
     else:
-        st.warning("⚠️ Backend responded but may not be fully ready.")
+        use_backup = True
 except Exception:
-    st.error("❌ Backend not reachable. Please start your FastAPI server (port 8000).")
+    st.warning("⚠️ Backend not reachable — using local Excel backup instead.")
+    use_backup = True
+
+# Load Excel backup
+if use_backup:
+    if os.path.exists(BACKUP_FILE):
+        df = pd.read_excel(BACKUP_FILE)
+        st.info(f"📁 Loaded offline backup: `{BACKUP_FILE}`")
+    else:
+        st.error("❌ Backup Excel not found. Please add `medsyn_backup.xlsx` to the repo.")
+        st.stop()
 
 # -------------------------------
-# CATEGORIES AND SUGGESTED KEYWORDS
+# CATEGORY + TERM SELECTION
 # -------------------------------
-categories = {
-    "🧬 Cell Processes": ["apoptosis", "cell cycle", "DNA repair", "angiogenesis"],
-    "🧫 Diseases": ["breast carcinoma", "lung cancer", "glioblastoma", "diabetes mellitus"],
-    "🧠 Genes & Proteins": ["TP53", "EGFR", "BRCA1", "AKT1"],
-    "💊 Drug Classes": ["PARP inhibitors", "monoclonal antibodies", "NSAIDs", "kinase inhibitors"],
-    "🏥 Clinical Terms": ["metastasis", "immunotherapy", "chemotherapy", "biomarker"]
-}
+categories = sorted(df["Category"].unique()) if use_backup else [
+    "🧬 Cell Processes",
+    "🧫 Diseases",
+    "🧠 Genes & Proteins",
+    "💊 Drug Classes",
+    "🏥 Clinical Terms"
+]
 
 st.markdown("---")
 st.subheader("🔍 Explore Medical Terminology")
 
-selected_category = st.selectbox("Select a category:", list(categories.keys()))
-selected_suggestion = st.selectbox(
-    "Choose a suggested keyword:",
-    [""] + categories[selected_category],
-    format_func=lambda x: "Select a term..." if x == "" else x
-)
+selected_category = st.selectbox("Select a category:", categories)
 
-# Handle clickable suggestion (auto-send to chat)
-if selected_suggestion and "auto_sent" not in st.session_state:
-    st.session_state.auto_sent = selected_suggestion
+if use_backup:
+    terms = df[df["Category"] == selected_category]["Term"].unique().tolist()
+else:
+    terms = []
+
+selected_term = st.selectbox("Choose a suggested keyword:", [""] + terms)
 
 # -------------------------------
-# BACKEND QUERY FUNCTIONS
-# -------------------------------
-def query_exact_match_by_code(code):
-    res = requests.post(f"{API_URL}/exact_match/by_code", json={"code": code})
-    return res.json() if res.status_code == 200 else {"error": res.text}
-
-def query_exact_match_by_term(term):
-    res = requests.post(f"{API_URL}/exact_match/by_term", json={"term": term})
-    return res.json() if res.status_code == 200 else {"error": res.text}
-
-def query_synonym_by_code(code):
-    res = requests.post(f"{API_URL}/synonym/by_code", json={"code": code})
-    return res.json() if res.status_code == 200 else {"error": res.text}
-
-def query_synonym_by_term(term):
-    res = requests.post(f"{API_URL}/synonym/by_term", json={"term": term})
-    return res.json() if res.status_code == 200 else {"error": res.text}
-
-def query_semantic_by_code(code):
-    res = requests.post(f"{API_URL}/semantic/by_code", json={"code": code})
-    return res.json() if res.status_code == 200 else {"error": res.text}
-
-def query_semantic_by_term(term):
-    res = requests.post(f"{API_URL}/semantic/by_term", json={"term": term})
-    return res.json() if res.status_code == 200 else {"error": res.text}
-
-# -------------------------------
-# SIDEBAR CONFIGURATION
-# -------------------------------
-with st.sidebar:
-    st.header("⚙️ Settings")
-    st.markdown("**Backend URL:**")
-    api_endpoint = st.text_input("API Endpoint", API_URL)
-    st.markdown("---")
-
-    st.markdown("**Query Mode**")
-    query_type = st.radio(
-        "Choose query type:",
-        ["Exact Match", "Synonym Search", "Semantic Search"],
-        index=1,
-        label_visibility="collapsed"
-    )
-
-    st.markdown("---")
-    st.caption("🧬 MedSyn AI v1.2 | © 2025")
-
-# -------------------------------
-# MAIN CHAT INTERFACE
+# CHAT & QUERY LOGIC
 # -------------------------------
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 st.subheader("💬 Interactive Chat")
 
-# Show chat history
+# Display previous messages
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
 
-# Determine input (manual or from dropdown)
+# Use manual or dropdown term
 prompt = st.chat_input("Enter a medical term or NCIT code...")
+if not prompt and selected_term:
+    prompt = selected_term
 
-if "auto_sent" in st.session_state and not prompt:
-    prompt = st.session_state.auto_sent
-    del st.session_state.auto_sent
-
-# Chat logic
 if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
@@ -154,32 +114,22 @@ if prompt:
     with st.chat_message("assistant"):
         with st.spinner("Analyzing term..."):
             try:
-                # Determine if the input looks like a code or a term
-                if prompt.strip().upper().startswith("C") and prompt[1:].isdigit():
-                    # Likely a code
-                    if query_type == "Exact Match":
-                        result = query_exact_match_by_code(prompt)
-                    elif query_type == "Synonym Search":
-                        result = query_synonym_by_code(prompt)
+                if use_backup:
+                    # Look up term in Excel
+                    result_row = df[df["Term"].str.lower() == prompt.lower()]
+                    if not result_row.empty:
+                        synonyms = result_row.iloc[0]["Synonyms"]
+                        definition = result_row.iloc[0]["Definition"]
+                        reply = f"### 🧠 **Results for '{prompt}'**\n"
+                        reply += f"**Synonyms:** {synonyms}\n\n**Definition:** {definition}"
                     else:
-                        result = query_semantic_by_code(prompt)
+                        reply = f"⚠️ No data found for '{prompt}' in backup file."
                 else:
-                    # Likely a term
-                    if query_type == "Exact Match":
-                        result = query_exact_match_by_term(prompt)
-                    elif query_type == "Synonym Search":
-                        result = query_synonym_by_term(prompt)
-                    else:
-                        result = query_semantic_by_term(prompt)
-
-                if "error" in result:
-                    reply = f"⚠️ Error: {result['error']}"
-                else:
-                    reply = f"### 🧠 Results for **'{prompt}'**\n"
-                    reply += f"```json\n{result}\n```"
+                    # Placeholder for backend
+                    reply = f"🔗 Backend mode will query: {API_URL}/... (currently offline)"
 
             except Exception as e:
-                reply = f"❌ Backend connection error: {str(e)}"
+                reply = f"❌ Error: {str(e)}"
 
             st.markdown(reply)
             st.session_state.messages.append({"role": "assistant", "content": reply})
@@ -189,6 +139,6 @@ if prompt:
 # -------------------------------
 st.markdown("---")
 st.markdown(
-    "<center><p style='color:#9e9e9e;'>MedSyn AI © 2025 | Developed by Scientists for Experts — Built to Unify Medical Terminology Through Semantic Intelligence</p></center>",
+    "<center><p style='color:#9e9e9e;'>MedSyn AI © 2025 | Developed by Scientists for Experts 🎯 Built to Unify Medical Terminology Through Semantic Intelligence</p></center>",
     unsafe_allow_html=True
 )
