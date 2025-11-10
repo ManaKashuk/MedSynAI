@@ -91,8 +91,8 @@ if prompt:
         
 # Replace the assistant chat message avatar
 st.chat_message("assistant", avatar="icon.png").markdown(reply)
-    with st.chat_message("assistant"):
-    st.markdown(reply)
+        with st.chat_message("assistant"):
+        st.markdown(reply)
     
         with st.spinner("Analyzing term..."):
             try:
