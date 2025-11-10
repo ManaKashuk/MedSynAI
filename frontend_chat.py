@@ -10,7 +10,7 @@ from PIL import Image
 # PAGE CONFIGURATION
 # -------------------------------
 st.set_page_config(
-    page_title="MedSyn AI:Medical Synonym Assistant",
+    page_title="MedSyn AI: Medical Synonym Assistant",
     page_icon="🧬",
     layout="wide"
 )
@@ -27,7 +27,9 @@ except Exception:
 
 st.markdown(
     """
-    <h1 style='font-size: 2em; color: #5b6254;'>🧬 MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
+    <h1 style='font-size: 2em; color: #5b6254;'>🧬 MedSyn AI (Medical Synonym Assistant)</h1>
+    <p style='font-size: 1.1em; color: #6e7467;'>
+    MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
     </p>
     """,
@@ -39,6 +41,34 @@ st.markdown(
 # -------------------------------
 API_URL = "http://127.0.0.1:8000"  # change this to your deployed backend URL when live
 
+# Check backend connection
+try:
+    response = requests.get(f"{API_URL}/health")
+    if response.status_code == 200:
+        st.success("✅ Backend is online and ready")
+    else:
+        st.warning("⚠️ Backend responded but may not be fully ready.")
+except Exception:
+    st.error("❌ Backend not reachable. Please start your FastAPI server (port 8000).")
+
+# -------------------------------
+# EXAMPLE PROMPTS
+# -------------------------------
+st.markdown(
+    """
+    💡 **Try one of these example queries:**
+    - `apoptosis`
+    - `C17988`
+    - `breast carcinoma`
+    - `angiogenesis`
+    - `DNA repair`
+    """,
+    unsafe_allow_html=True
+)
+
+# -------------------------------
+# BACKEND QUERY FUNCTIONS
+# -------------------------------
 def query_exact_match_by_code(code):
     res = requests.post(f"{API_URL}/exact_match/by_code", json={"code": code})
     return res.json() if res.status_code == 200 else {"error": res.text}
@@ -55,7 +85,6 @@ def query_synonym_by_term(term):
     res = requests.post(f"{API_URL}/synonym/by_term", json={"term": term})
     return res.json() if res.status_code == 200 else {"error": res.text}
 
-# Optional: for semantic-level results (future extension)
 def query_semantic_by_code(code):
     res = requests.post(f"{API_URL}/semantic/by_code", json={"code": code})
     return res.json() if res.status_code == 200 else {"error": res.text}
@@ -82,7 +111,7 @@ with st.sidebar:
     )
 
     st.markdown("---")
-    st.caption("🧬 MedSyn AI v1.0 | © 2025")
+    st.caption("🧬 MedSyn AI v1.1 | © 2025")
 
 # -------------------------------
 # MAIN CHAT INTERFACE
@@ -139,6 +168,6 @@ if prompt := st.chat_input("Enter a medical term or NCIT code..."):
 # -------------------------------
 st.markdown("---")
 st.markdown(
-    "<center><p style='color:#9e9e9e;'>MedSyn AI © 2025 | Built to Unify Medical Terminology Through Semantic Intelligence</p></center>",
+    "<center><p style='color:#9e9e9e;'>MedSyn AI © 2025 | Developed by Scientists for Experts — Built to Unify Medical Terminology Through Semantic Intelligence</p></center>",
     unsafe_allow_html=True
 )
