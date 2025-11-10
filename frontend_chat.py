@@ -94,7 +94,7 @@ if prompt:
             unsafe_allow_html=True
         )
     else:
-        st.warning(f"⚠️ No data found for '{prompt}' in local backup.")
+        st.warning(f"⚠️ No match for '{prompt}' in current reference set. Adding to database pipeline… meanwhile, explore available terms in the dropdown.")
 
 # -------------------------------
 # FOOTER
