@@ -1,5 +1,5 @@
 # ===============================
-# 🧬 MedSyn AI — Medical Synonym Assistant (Offline CSV Mode)
+# 🧬 MedSyn AI — Medical Synonym Assistant (Offline CSV Mode with Icon)
 # ===============================
 
 import streamlit as st
@@ -12,7 +12,7 @@ import os
 # -------------------------------
 st.set_page_config(
     page_title="MedSyn AI: Medical Synonym Assistant",
-    page_icon="🧬",
+    page_icon="icon.png",  # custom MedSyn AI icon replaces default orange robot
     layout="wide"
 )
 
@@ -29,7 +29,7 @@ except Exception:
 st.markdown(
     """
     <p style='font-size: 1.1em; color: #6e7467;'>
-    💡 MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
+    💡MedSyn AI is a semantic assistant designed to unify medical terminology, enabling fast synonym discovery,
     contextual understanding, and data interoperability across biomedical datasets.
     </p>
     """,
@@ -75,8 +75,12 @@ st.subheader("💬 Interactive Chat")
 
 # Display chat history
 for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+    if msg["role"] == "assistant":
+        with st.chat_message("assistant", avatar="icon.png"):  # custom MedSyn AI icon
+            st.markdown(msg["content"])
+    else:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
 # Determine input (manual or from dropdown)
 prompt = st.chat_input("Enter a medical term or NCIT code...")
@@ -88,12 +92,8 @@ if prompt:
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
-        
-# Replace the assistant chat message avatar
-st.chat_message("assistant", avatar="icon.png").markdown(reply)
-        with st.chat_message("assistant"):
-        st.markdown(reply)
-    
+
+    with st.chat_message("assistant", avatar="icon.png"):  # 🧬 MedSyn AI speaks
         with st.spinner("Analyzing term..."):
             try:
                 result_row = df[df["Term"].str.lower() == prompt.lower()]
