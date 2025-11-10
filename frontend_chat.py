@@ -1,5 +1,5 @@
 # ===============================
-# 🧬 MedSyn AI — Medical Synonym Assistant (Offline Excel Mode)
+# 🧬 MedSyn AI — Medical Synonym Assistant (Offline  Mode)
 # ===============================
 
 import streamlit as st
@@ -38,7 +38,7 @@ st.markdown(
 )
 
 # -------------------------------
-# BACKEND OR EXCEL BACKUP
+# BACKEND OR  BACKUP
 # -------------------------------
 API_URL = "http://127.0.0.1:8000"
 BACKUP_FILE = "medsyn_backup.csv"
@@ -53,16 +53,16 @@ try:
     else:
         use_backup = True
 except Exception:
-    st.warning("⚠️ Backend not reachable — using local Excel backup instead.")
+    st.warning("⚠️ Backend not reachable — using local  backup instead.")
     use_backup = True
 
-# Load Excel backup
+# Load  backup
 if use_backup:
     if os.path.exists(BACKUP_FILE):
-        df = pd.read_excel(BACKUP_FILE)
+        df = pd.read_(BACKUP_FILE)
         st.info(f"📁 Loaded offline backup: `{BACKUP_FILE}`")
     else:
-        st.error("❌ Backup Excel not found. Please add `medsyn_backup.xlsx` to the repo.")
+        st.error("❌ Backup  not found. Please add `medsyn_backup.xlsx` to the repo.")
         st.stop()
 
 # -------------------------------
@@ -115,7 +115,7 @@ if prompt:
         with st.spinner("Analyzing term..."):
             try:
                 if use_backup:
-                    # Look up term in Excel
+                    # Look up term in 
                     result_row = df[df["Term"].str.lower() == prompt.lower()]
                     if not result_row.empty:
                         synonyms = result_row.iloc[0]["Synonyms"]
