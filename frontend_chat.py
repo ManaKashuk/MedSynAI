@@ -12,8 +12,7 @@ from PIL import Image
 st.set_page_config(
     page_title="MedSyn AI:Medical Synonym Assistant",
     page_icon="🧬",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # -------------------------------
