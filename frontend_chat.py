@@ -93,8 +93,6 @@ with st.sidebar:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-st.subheader("💬 MedSyn AI Interactive Chat")
-
 # Show chat history
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
@@ -144,6 +142,6 @@ if prompt := st.chat_input("Enter a medical term or NCIT code..."):
 # -------------------------------
 st.markdown("---")
 st.markdown(
-    "<center><p style='color:#9e9e9e;'>MedSyn AI © 2025 | Built with ❤️ using Streamlit & FastAPI</p></center>",
+    "<center><p style='color:#9e9e9e;'>MedSyn AI © 2025 | Built to Unify Medical Terminology Through Semantic Intelligence</p></center>",
     unsafe_allow_html=True
 )
