@@ -100,7 +100,7 @@ if prompt:
                 if not result_row.empty:
                     synonyms = result_row.iloc[0]["Synonyms"]
                     definition = result_row.iloc[0]["Definition"]
-                    reply = f"### 🧠 **Results for '{prompt}'**\n"
+                    reply = f"### **Results for '{prompt}'**\n"
                     reply += f"**Synonyms:** {synonyms}\n\n"
                     reply += f"**Definition:** {definition}"
                 else:
